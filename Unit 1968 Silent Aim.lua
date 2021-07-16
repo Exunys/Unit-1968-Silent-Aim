@@ -4,8 +4,8 @@ local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 local Typing = false
 
-_G.DisableKey = Enum.KeyCode.E
-_G.SilentAimEnabled = true
+getgenv().DisableKey = Enum.KeyCode.E
+getgenv().SilentAimEnabled = true
 
 local Method = "FireServer"
 local Remote = "Bullet"
@@ -50,23 +50,20 @@ UserInputService.TextBoxFocusReleased:Connect(function()
 end)
 
 UserInputService.InputBegan:Connect(function(Input)
-    if Input.KeyCode == _G.DisableKey and Typing == false then
-        _G.SilentAimEnabled = not _G.SilentAimEnabled
+    if Input.KeyCode == getgenv().DisableKey and Typing == false then
+       getgenv().SilentAimEnabled = not getgenv().SilentAimEnabled
     end
 end)
 
-local GameMetaTable = getrawmetatable(game)
-local OldNameCall = GameMetaTable.__namecall
+local OldNameCall = nil
 
-setreadonly(GameMetaTable, false)
-
-GameMetaTable.__namecall = newcclosure(function(Self, ...)
+OldNameCall = hookmetamethod(game, "__namecall", (function(Self, ...)
     local NameCallMethod = getnamecallmethod()
 
     if tostring(NameCallMethod) == Method and tostring(Self) == Remote then
         local Arguments = {...}
 
-        if _G.SilentAimEnabled == true then
+        if getgenv().SilentAimEnabled == true then
             Arguments[1] = GetClosestPlayer().Character.Head
             Arguments[2] = GetClosestPlayer().Character.Head.Position
         end
@@ -76,5 +73,3 @@ GameMetaTable.__namecall = newcclosure(function(Self, ...)
 
     return OldNameCall(Self, ...)
 end)
-
-setreadonly(GameMetaTable, true)
